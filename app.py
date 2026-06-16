@@ -15,7 +15,7 @@ import matplotlib.ticker as mticker
 # ── Page config ─────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="I-66 Congestion Forecast Explorer",
-    page_icon="🚦",
+    
     layout="wide",
     initial_sidebar_state="expanded",
 )
