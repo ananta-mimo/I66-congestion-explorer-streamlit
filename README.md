@@ -2,7 +2,7 @@
 
 An interactive Streamlit app showcasing the Phase 1 predictability ceiling study on the I-66 Inside the Beltway (ITB) corridor in Northern Virginia.
 
-**[Live App →] (https://i66-congestion-explorer.streamlit.app/)** 
+**Live App → https://i66-congestion-explorer.streamlit.app/** 
 ---
 
 ## What This App Shows
