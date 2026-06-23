@@ -162,7 +162,7 @@ def tti_color(tti):
 
 # ── Sidebar ──────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🚦 I-66 ITB Explorer")
+    st.markdown("## I-66 ITB Explorer")
     st.markdown(
         "<div style='font-size:12px;color:#5a7a99;line-height:1.6'>"
         "I-66 Inside the Beltway (ITB) is a managed lane corridor in "
