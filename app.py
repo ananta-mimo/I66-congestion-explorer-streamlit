@@ -199,11 +199,11 @@ with st.sidebar:
 
 # ── Header ───────────────────────────────────────────────────────────────────
 st.markdown(
-    "<h1 style='font-family:IBM Plex Mono,monospace;font-size:1.6rem;"
-    "font-weight:600;letter-spacing:0.04em;color:#cde4f5;margin-bottom:4px'>"
+    "<h1 style='font-family:IBM Plex Mono,monospace;font-size:1.8rem;"
+    "font-weight:600;letter-spacing:0.04em;color:#3a6186;margin-bottom:4px'>"
     "I-66 ITB · Congestion Forecast Explorer"
     "</h1>"
-    "<p style='color:#5a7a99;font-size:13px;margin-top:0'>"
+    "<p style='color:#5a7a99;font-size:14px;margin-top:0'>"
     "Phase 1 predictability ceiling study · Endogenous TTI baseline · "
     "XGBoost / Random Forest / Persistence"
     "</p>",
