@@ -167,7 +167,7 @@ with st.sidebar:
         "<div style='font-size:12px;color:#5a7a99;line-height:1.6'>"
         "I-66 Inside the Beltway (ITB) is a managed lane corridor in "
         "Northern Virginia with asymmetric peak-hour tolling.<br><br>"
-        "TTI (Travel Time Index) is the ratio of actual travel time to free-flow travel time. "
+        "TTI (Travel Time Index) is the ratio of actual travel time to free-flow travel time.<br><br>"
         "<b style='color:#8aafcc'>EB</b> is tolled during AM peak (5:30–9:30 AM).<br>"
         "<b style='color:#8aafcc'>WB</b> is tolled during PM peak (3:00–7:00 PM)."
         "</div>", unsafe_allow_html=True
