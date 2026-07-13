@@ -202,7 +202,7 @@ with st.sidebar:
 st.markdown(
     "<h1 style='font-family:IBM Plex Mono,monospace;font-size:2.0rem;"
     "font-weight:600;letter-spacing:0.04em;color:#3a6186;margin-bottom:4px'>"
-    "I-66 ITB · Congestion Forecast Explorer"
+    "I-66 ITB (Inside the Beltway) · Congestion Forecast Explorer"
     "</h1>"
     "<p style='color:#5a7a99;font-size:14px;margin-top:0'>"
     "Phase 1 predictability ceiling study · Endogenous TTI baseline · "
