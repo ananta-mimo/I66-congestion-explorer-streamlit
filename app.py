@@ -405,7 +405,7 @@ with col_a:
     wb = tti_hour[tti_hour["direction"]=="WESTBOUND"].sort_values("hour_of_day")
 
     fig, ax = plt.subplots(figsize=(7, 3.4))
-    fig.patch.set_facecolor("#8F7452")
+    fig.patch.set_facecolor("#F3F2F0")
     ax.set_facecolor("#FFFFFF")
 
     ax.fill_between(eb["hour_of_day"], 1.0, eb["tti"], color="#1C2B3A", alpha=0.07)
@@ -418,18 +418,18 @@ with col_a:
     ax.scatter([hour], [tti_now], color="#B03020", s=70, zorder=5)
 
     for level, lbl in [(1.1,"Free Flow"), (1.3,"Moderate"), (1.6,"Congested")]:
-        ax.axhline(y=level, color="#E0DDD8", linewidth=0.9)
+        ax.axhline(y=level, color="#C9300A", linewidth=0.9)
         ax.text(23.3, level, lbl, va="center", fontsize=8,
-                color="#8A9BB0", fontstyle="italic")
+                color="#0F151D", fontstyle="italic")
 
-    ax.set_xlabel("Hour of Day", fontsize=10, color="#6A8AA0",
+    ax.set_xlabel("Hour of Day", fontsize=10, color="#0E171D",
                   fontfamily="DM Sans")
-    ax.set_ylabel("Mean TTI", fontsize=10, color="#6A8AA0",
+    ax.set_ylabel("Mean TTI", fontsize=10, color="#0E171D",
                   fontfamily="DM Sans")
     ax.set_xlim(0, 24)
-    ax.tick_params(colors="#8A9BB0", labelsize=9)
+    ax.tick_params(colors="#0B1520", labelsize=9)
     for spine in ax.spines.values():
-        spine.set_edgecolor("#E8E4DE")
+        spine.set_edgecolor("#0F0C08")
     ax.legend(fontsize=10, framealpha=0, labelcolor="#1C2B3A")
     ax.grid(False)
     plt.tight_layout()
