@@ -1,8 +1,12 @@
 """
-I-66 ITB Congestion Forecast Explorer — Redesigned
-====================================================
-Clean research-dashboard aesthetic. White/warm background,
-serif display type, road-sign TTI meter as signature element.
+I-66 ITB Congestion Forecast Explorer — v2
+============================================
+Changes from v1:
+  - Slider defaults to current local hour (US/Eastern)
+  - Day-of-week defaults to today
+  - Fonts switched to DM Sans + DM Mono (cleaner, less AI-default)
+  - Volatility chart shows intersection name alongside TMC code
+  - Font sizes bumped up across the board
 """
 
 import streamlit as st
@@ -10,7 +14,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import matplotlib.patches as mpatches
+from datetime import datetime
+import pytz
 
 st.set_page_config(
     page_title="I-66 ITB · Congestion Forecast",
@@ -18,198 +23,198 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── Current time in US/Eastern ────────────────────────────────────────────────
+eastern   = pytz.timezone("America/New_York")
+now_et    = datetime.now(eastern)
+now_hour  = now_et.hour
+now_dow   = now_et.weekday()   # 0 = Monday
+
 # ── Design tokens ─────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap');
 
-/* Reset */
 html, body, [class*="css"] {
-  font-family: 'Inter', sans-serif;
-  background-color: #FAFAF8;
-  color: #1a2332;
+  font-family: 'DM Sans', sans-serif;
+  background-color: #F7F5F2;
+  color: #1C2B3A;
 }
 
-/* Sidebar */
+/* ── Sidebar ── */
 section[data-testid="stSidebar"] {
-  background-color: #1a2332 !important;
-  border-right: none;
+  background-color: #1C2B3A !important;
 }
-section[data-testid="stSidebar"] * {
-  color: #c8d4e0 !important;
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] div,
+section[data-testid="stSidebar"] label {
+  color: #B8C8D8 !important;
 }
 section[data-testid="stSidebar"] .stRadio label,
 section[data-testid="stSidebar"] .stSelectbox label,
 section[data-testid="stSidebar"] .stSlider label {
-  color: #8A9BB0 !important;
-  font-size: 10px !important;
-  letter-spacing: 0.12em;
+  font-size: 11px !important;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-family: 'JetBrains Mono', monospace !important;
+  color: #6A8AA0 !important;
+  font-family: 'DM Mono', monospace !important;
 }
 section[data-testid="stSidebar"] hr {
-  border-color: #2d3f54 !important;
+  border-color: #2D3F52 !important;
+  margin: 18px 0 !important;
 }
 
-/* Road sign TTI meter — signature element */
+/* ── Road sign TTI meter ── */
 .tti-sign {
   display: flex;
   align-items: stretch;
   gap: 0;
-  border: 4px solid #1a2332;
-  border-radius: 8px;
+  border: 3px solid #1C2B3A;
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 28px;
-  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 32px;
+  font-family: 'DM Mono', monospace;
+  box-shadow: 4px 4px 0px #1C2B3A;
 }
 .tti-sign-label {
-  background: #1a2332;
-  color: #FAFAF8;
-  padding: 18px 20px;
+  background: #1C2B3A;
+  color: #F7F5F2;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-width: 130px;
+  min-width: 140px;
 }
-.tti-sign-label .sign-eyebrow {
-  font-size: 9px;
+.sign-eyebrow {
+  font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #8A9BB0;
-  margin-bottom: 4px;
+  color: #6A8AA0;
+  margin-bottom: 6px;
+  font-family: 'DM Mono', monospace;
 }
-.tti-sign-label .sign-title {
-  font-size: 13px;
+.sign-title {
+  font-size: 15px;
   font-weight: 600;
-  color: #FAFAF8;
-  line-height: 1.3;
+  color: #F7F5F2;
+  line-height: 1.4;
+  font-family: 'DM Sans', sans-serif;
 }
 .tti-sign-value {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 18px 28px;
-  gap: 32px;
+  justify-content: space-around;
+  padding: 20px 24px;
+  background: #FFFFFF;
+  gap: 8px;
 }
-.tti-block {
-  text-align: center;
-}
+.tti-block { text-align: center; }
 .tti-num {
-  font-size: 2.8rem;
-  font-weight: 600;
+  font-size: 3rem;
+  font-weight: 700;
   line-height: 1;
+  font-family: 'DM Mono', monospace;
 }
 .tti-desc {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8A9BB0;
-  margin-top: 4px;
+  color: #6A8AA0;
+  margin-top: 6px;
+  font-family: 'DM Mono', monospace;
 }
 .tti-divider {
   width: 1px;
-  background: #e0ddd8;
-  margin: 8px 0;
+  background: #E8E4DE;
+  margin: 4px 0;
+  align-self: stretch;
 }
 .status-pill {
   display: inline-block;
-  padding: 5px 16px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 6px 18px;
+  border-radius: 4px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'DM Mono', monospace;
 }
-.pill-free    { background: #1e5c38; color: #ffffff; }
-.pill-mod     { background: #8a5a00; color: #ffffff; }
-.pill-cong    { background: #8a1a00; color: #ffffff; }
-.pill-severe  { background: #4a0000; color: #ffffff; }
-.pill-toll-on  { background: #C0392B; color: #ffffff; }
-.pill-toll-off { background: #e8e4e0; color: #8A9BB0; }
+.pill-free   { background:#1B5E35; color:#fff; }
+.pill-mod    { background:#7A4F00; color:#fff; }
+.pill-cong   { background:#8B1A00; color:#fff; }
+.pill-severe { background:#3D0000; color:#fff; }
+.pill-toll-on  { background:#B03020; color:#fff; }
+.pill-toll-off { background:#E8E4DE; color:#8A9BB0; }
 
-/* Section styling */
+/* ── Section styling ── */
 .section-rule {
   border: none;
-  border-top: 1.5px solid #1a2332;
-  margin: 36px 0 20px 0;
+  border-top: 2px solid #1C2B3A;
+  margin: 40px 0 22px 0;
 }
 .section-eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #8A9BB0;
-  font-family: 'JetBrains Mono', monospace;
-  margin-bottom: 4px;
+  color: #6A8AA0;
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 6px;
 }
 .section-title {
-  font-family: 'Fraunces', serif;
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: #1a2332;
-  margin-bottom: 16px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #1C2B3A;
+  margin-bottom: 20px;
   line-height: 1.2;
 }
 
-/* Stat cards */
-.stat-row {
-  display: flex;
-  gap: 1px;
-  background: #d8d4ce;
-  border: 1px solid #d8d4ce;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.stat-cell {
-  flex: 1;
-  background: #FAFAF8;
-  padding: 16px 18px;
-}
-.stat-cell-label {
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #8A9BB0;
-  font-family: 'JetBrains Mono', monospace;
-  margin-bottom: 6px;
-}
-.stat-cell-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #1a2332;
-  line-height: 1;
-}
-.stat-cell-sub {
-  font-size: 11px;
-  color: #8A9BB0;
-  margin-top: 4px;
-}
-
-/* Finding box */
+/* ── Finding box ── */
 .finding-box {
-  background: #EEF2F7;
-  border-left: 4px solid #1a2332;
-  padding: 16px 20px;
-  border-radius: 0 4px 4px 0;
-  font-size: 13px;
-  line-height: 1.7;
-  color: #2d3f54;
+  background: #EDF2F7;
+  border-left: 4px solid #1C2B3A;
+  padding: 18px 22px;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #2D3F52;
 }
-.finding-box b { color: #1a2332; }
+.finding-box b { color: #1C2B3A; }
 
-/* Footer */
+/* ── Footer ── */
 .app-footer {
-  margin-top: 48px;
-  padding-top: 16px;
-  border-top: 1px solid #d8d4ce;
+  margin-top: 52px;
+  padding-top: 18px;
+  border-top: 1px solid #D8D4CE;
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 12px;
   color: #8A9BB0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Page header ── */
+.page-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6A8AA0;
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 8px;
+}
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1C2B3A;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.page-sub {
+  font-size: 14px;
+  color: #6A8AA0;
+  font-family: 'DM Sans', sans-serif;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -222,9 +227,15 @@ def load_data():
     vol_tmc   = pd.read_csv("data/volatility_by_tmc.csv")
     model_res = pd.read_csv("data/overall_model_results.csv")
     per_tmc   = pd.read_csv("data/per_tmc_results.csv")
-    return tti_hour, tti_dow, vol_tmc, model_res, per_tmc
+    tmc_id    = pd.read_csv("data/TMC_Identification.csv")
+    # Build clean TMC → intersection label (keep one row per TMC)
+    tmc_labels = (tmc_id[['tmc','intersection']]
+                  .drop_duplicates(subset='tmc')
+                  .set_index('tmc')['intersection']
+                  .to_dict())
+    return tti_hour, tti_dow, vol_tmc, model_res, per_tmc, tmc_labels
 
-tti_hour, tti_dow, vol_tmc, model_res, per_tmc = load_data()
+tti_hour, tti_dow, vol_tmc, model_res, per_tmc, tmc_labels = load_data()
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 DAY_LABELS = {0:"Monday",1:"Tuesday",2:"Wednesday",
@@ -251,33 +262,38 @@ def simulate_prediction(hour, direction, dow, horizon_min):
     return round(tti_now,3), round(predicted,3), round(rmse_lookup[horizon_min],3)
 
 def congestion_info(tti):
-    if tti < 1.1:   return "Free Flow",  "pill-free",  "#1e5c38"
-    elif tti < 1.3: return "Moderate",   "pill-mod",   "#8a5a00"
-    elif tti < 1.6: return "Congested",  "pill-cong",  "#8a1a00"
-    else:           return "Severe",     "pill-severe", "#4a0000"
+    if tti < 1.1:   return "Free Flow",  "pill-free",  "#1B5E35"
+    elif tti < 1.3: return "Moderate",   "pill-mod",   "#7A4F00"
+    elif tti < 1.6: return "Congested",  "pill-cong",  "#8B1A00"
+    else:           return "Severe",     "pill-severe", "#3D0000"
 
 def chart_color(tti):
-    if tti < 1.1:   return "#2d8a50"
-    elif tti < 1.3: return "#c78d00"
-    elif tti < 1.6: return "#C0392B"
-    else:           return "#7a0000"
+    if tti < 1.1:   return "#2A9D5C"
+    elif tti < 1.3: return "#D4900A"
+    elif tti < 1.6: return "#B03020"
+    else:           return "#7A0000"
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+def tmc_display_label(tmc):
+    """Return 'INTERSECTION (TMC)' or just TMC if not found."""
+    intersection = tmc_labels.get(tmc, "")
+    if intersection:
+        # Clean up the intersection string a bit
+        clean = intersection.replace("/EXIT", " Exit").replace("/", " / ")
+        return f"{clean}  ({tmc})"
+    return tmc
+
+# ── Sidebar — defaults to current time ───────────────────────────────────────
 with st.sidebar:
     st.markdown("""
-    <div style='padding:24px 0 8px 0'>
-      <div style='font-size:9px;letter-spacing:0.2em;text-transform:uppercase;
-                  color:#8A9BB0;font-family:JetBrains Mono,monospace;margin-bottom:6px'>
-        Research Dashboard
-      </div>
-      <div style='font-family:Fraunces,serif;font-size:1.3rem;font-weight:600;
-                  color:#FAFAF8;line-height:1.2'>
+    <div style='padding:24px 0 10px 0'>
+      <div class='sign-eyebrow'>Research Dashboard</div>
+      <div style='font-family:Playfair Display,serif;font-size:1.4rem;
+                  font-weight:700;color:#F7F5F2;line-height:1.25;margin-top:4px'>
         I-66 ITB<br>Congestion<br>Forecast
       </div>
-      <div style='margin-top:10px;font-size:11px;color:#8A9BB0;line-height:1.5'>
-        Northern Virginia<br>
-        41 TMC segments<br>
-        2022–2025
+      <div style='margin-top:12px;font-size:13px;color:#6A8AA0;line-height:1.6;
+                  font-family:DM Sans,sans-serif'>
+        Northern Virginia<br>41 TMC segments · 2022–2025
       </div>
     </div>
     """, unsafe_allow_html=True)
@@ -288,24 +304,30 @@ with st.sidebar:
         ["EASTBOUND","WESTBOUND"],
         format_func=lambda x: "→ Eastbound" if x=="EASTBOUND" else "← Westbound"
     )
-    hour = st.slider("Hour of Day", 0, 23, 17, format="%d:00")
-    dow  = st.selectbox("Day of Week", list(DAY_LABELS.keys()),
-                        format_func=lambda x: DAY_LABELS[x], index=1)
+
+    # Default to current Eastern hour
+    hour = st.slider("Hour of Day", 0, 23, now_hour, format="%d:00",
+                     help="Defaults to current time in US/Eastern")
+
+    # Default to today's day of week
+    dow = st.selectbox("Day of Week", list(DAY_LABELS.keys()),
+                       format_func=lambda x: DAY_LABELS[x],
+                       index=now_dow)
+
     horizon = st.selectbox("Forecast Horizon",
-                           [5,15,30],
+                           [5, 15, 30],
                            format_func=lambda x: f"{x} min ahead")
 
     st.markdown("---")
-    st.markdown("""
-    <div style='font-size:10px;line-height:1.8;color:#4a6070'>
-      <div style='color:#8A9BB0;letter-spacing:0.12em;font-size:9px;
-                  text-transform:uppercase;margin-bottom:6px;
-                  font-family:JetBrains Mono,monospace'>About</div>
-      I-66 ITB has asymmetric dynamic tolling.<br>
+    st.markdown(f"""
+    <div style='font-size:12px;line-height:1.8;color:#4a6070;font-family:DM Sans,sans-serif'>
+      <div class='sign-eyebrow' style='margin-bottom:8px'>About</div>
+      I-66 ITB uses asymmetric dynamic tolling.<br>
       <b style='color:#8A9BB0'>EB</b> tolled AM peak 5:30–9:30<br>
       <b style='color:#8A9BB0'>WB</b> tolled PM peak 3:00–7:00<br><br>
-      TTI = actual travel time ÷ free-flow travel time.<br>
-      TTI 1.0 = free flow. TTI 2.0 = twice as slow.
+      TTI = actual ÷ free-flow travel time.<br>
+      TTI 1.0 = free flow · TTI 2.0 = 2× slower.<br><br>
+      <span style='color:#4a6070'>Current time (ET): {now_et.strftime('%H:%M')}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -317,38 +339,34 @@ toll_on = ((direction=="EASTBOUND" and 5<=hour<=9) or
 dir_short = "EB" if direction=="EASTBOUND" else "WB"
 
 # ── Page header ───────────────────────────────────────────────────────────────
-st.markdown("""
-<div style='padding-bottom:4px'>
-  <div style='font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
-              color:#8A9BB0;font-family:JetBrains Mono,monospace;margin-bottom:6px'>
-    Phase 1 · Endogenous TTI Predictability Ceiling Study
-  </div>
-  <div style='font-family:Fraunces,serif;font-size:2rem;font-weight:600;
-              color:#1a2332;line-height:1.1;margin-bottom:4px'>
-    I-66 Inside the Beltway — Congestion Forecast Explorer
-  </div>
-  <div style='font-size:13px;color:#8A9BB0'>
-    XGBoost · Random Forest · Persistence baseline &nbsp;·&nbsp; Manuscript under review,
-    <i>Transportation Research Part C</i>
+st.markdown(f"""
+<div style='padding-bottom:6px'>
+  <div class='page-eyebrow'>Phase 1 · Endogenous TTI Predictability Ceiling Study</div>
+  <div class='page-title'>I-66 Inside the Beltway<br>Congestion Forecast Explorer</div>
+  <div class='page-sub'>
+    XGBoost · Random Forest · Persistence baseline &nbsp;·&nbsp;
+    Manuscript under review, <i>Transportation Research Part C</i>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<hr class='section-rule' style='margin-top:20px'>", unsafe_allow_html=True)
+st.markdown("<hr class='section-rule' style='margin-top:22px'>", unsafe_allow_html=True)
 
 # ── SIGNATURE ELEMENT: Road-sign TTI meter ────────────────────────────────────
-toll_pill  = "pill-toll-on"  if toll_on else "pill-toll-off"
-toll_text  = "Toll Active"   if toll_on else "Toll Inactive"
+toll_pill = "pill-toll-on"  if toll_on else "pill-toll-off"
+toll_text = "Toll Active"   if toll_on else "Toll Inactive"
 
 st.markdown(f"""
 <div class='tti-sign'>
   <div class='tti-sign-label'>
     <div class='sign-eyebrow'>Live Estimate</div>
-    <div class='sign-title'>{dir_short} · {hour:02d}:00<br>{DAY_LABELS[dow]}</div>
+    <div class='sign-title'>
+      {dir_short} · {hour:02d}:00<br>{DAY_LABELS[dow]}
+    </div>
   </div>
   <div class='tti-sign-value'>
     <div class='tti-block'>
-      <div class='tti-num' style='color:#1a2332'>{tti_now:.3f}</div>
+      <div class='tti-num' style='color:#1C2B3A'>{tti_now:.3f}</div>
       <div class='tti-desc'>Current TTI</div>
     </div>
     <div class='tti-divider'></div>
@@ -359,16 +377,16 @@ st.markdown(f"""
     <div class='tti-divider'></div>
     <div class='tti-block'>
       <span class='status-pill {c_pill}'>{c_label}</span>
-      <div class='tti-desc' style='margin-top:8px'>Congestion State</div>
+      <div class='tti-desc' style='margin-top:10px'>Congestion State</div>
     </div>
     <div class='tti-divider'></div>
     <div class='tti-block'>
       <span class='status-pill {toll_pill}'>{toll_text}</span>
-      <div class='tti-desc' style='margin-top:8px'>I-66 Toll Window</div>
+      <div class='tti-desc' style='margin-top:10px'>I-66 Toll Window</div>
     </div>
     <div class='tti-divider'></div>
     <div class='tti-block'>
-      <div class='tti-num' style='font-size:1.6rem;color:#8A9BB0'>±{ci:.3f}</div>
+      <div class='tti-num' style='font-size:2rem;color:#8A9BB0'>±{ci:.3f}</div>
       <div class='tti-desc'>±1 RMSE Interval</div>
     </div>
   </div>
@@ -385,59 +403,58 @@ with col_a:
     eb = tti_hour[tti_hour["direction"]=="EASTBOUND"].sort_values("hour_of_day")
     wb = tti_hour[tti_hour["direction"]=="WESTBOUND"].sort_values("hour_of_day")
 
-    fig, ax = plt.subplots(figsize=(7, 3.2))
-    fig.patch.set_facecolor("#FAFAF8")
-    ax.set_facecolor("#FAFAF8")
+    fig, ax = plt.subplots(figsize=(7, 3.4))
+    fig.patch.set_facecolor("#F7F5F2")
+    ax.set_facecolor("#FFFFFF")
 
-    ax.fill_between(eb["hour_of_day"], 1.0, eb["tti"],
-                    color="#1a2332", alpha=0.08)
-    ax.fill_between(wb["hour_of_day"], 1.0, wb["tti"],
-                    color="#C0392B", alpha=0.08)
-    ax.plot(eb["hour_of_day"], eb["tti"], color="#1a2332",
-            linewidth=2, label="Eastbound")
-    ax.plot(wb["hour_of_day"], wb["tti"], color="#C0392B",
-            linewidth=2, label="Westbound", linestyle="--")
-    ax.axvline(x=hour, color="#C0392B", linewidth=1.2,
-               linestyle=":", alpha=0.7)
-    ax.scatter([hour], [tti_now], color="#C0392B", s=60, zorder=5)
+    ax.fill_between(eb["hour_of_day"], 1.0, eb["tti"], color="#1C2B3A", alpha=0.07)
+    ax.fill_between(wb["hour_of_day"], 1.0, wb["tti"], color="#B03020", alpha=0.07)
+    ax.plot(eb["hour_of_day"], eb["tti"], color="#1C2B3A", linewidth=2.2,
+            label="Eastbound")
+    ax.plot(wb["hour_of_day"], wb["tti"], color="#B03020", linewidth=2.2,
+            label="Westbound", linestyle="--")
+    ax.axvline(x=hour, color="#B03020", linewidth=1.4, linestyle=":", alpha=0.8)
+    ax.scatter([hour], [tti_now], color="#B03020", s=70, zorder=5)
 
     for level, lbl in [(1.1,"Free Flow"), (1.3,"Moderate"), (1.6,"Congested")]:
-        ax.axhline(y=level, color="#d8d4ce", linewidth=0.8, linestyle="-")
-        ax.text(23.2, level, lbl, va="center", fontsize=7,
+        ax.axhline(y=level, color="#E0DDD8", linewidth=0.9)
+        ax.text(23.3, level, lbl, va="center", fontsize=8,
                 color="#8A9BB0", fontstyle="italic")
 
-    ax.set_xlabel("Hour of Day", fontsize=9, color="#8A9BB0")
-    ax.set_ylabel("Mean TTI", fontsize=9, color="#8A9BB0")
+    ax.set_xlabel("Hour of Day", fontsize=10, color="#6A8AA0",
+                  fontfamily="DM Sans")
+    ax.set_ylabel("Mean TTI", fontsize=10, color="#6A8AA0",
+                  fontfamily="DM Sans")
     ax.set_xlim(0, 24)
-    ax.tick_params(colors="#8A9BB0", labelsize=8)
+    ax.tick_params(colors="#8A9BB0", labelsize=9)
     for spine in ax.spines.values():
-        spine.set_edgecolor("#e0ddd8")
-    ax.legend(fontsize=9, framealpha=0, labelcolor="#1a2332")
+        spine.set_edgecolor("#E8E4DE")
+    ax.legend(fontsize=10, framealpha=0, labelcolor="#1C2B3A")
     ax.grid(False)
     plt.tight_layout()
     st.pyplot(fig)
     plt.close()
 
 with col_b:
-    dow_labels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    dow_labels_short = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
     vals = tti_dow.sort_values("day_of_week_number")["tti"].values
-    colors_dow = ["#1a2332" if i<5 else "#8A9BB0" for i in range(7)]
-    colors_dow[dow] = "#C0392B"
+    colors_dow = ["#1C2B3A" if i < 5 else "#8A9BB0" for i in range(7)]
+    colors_dow[dow] = "#B03020"
 
-    fig2, ax2 = plt.subplots(figsize=(7, 3.2))
-    fig2.patch.set_facecolor("#FAFAF8")
-    ax2.set_facecolor("#FAFAF8")
+    fig2, ax2 = plt.subplots(figsize=(7, 3.4))
+    fig2.patch.set_facecolor("#F7F5F2")
+    ax2.set_facecolor("#FFFFFF")
 
-    ax2.bar(dow_labels, vals, color=colors_dow,
-            edgecolor="#FAFAF8", linewidth=1.5, width=0.6)
-    ax2.axhline(y=1.0, color="#d8d4ce", linewidth=0.8)
-    ax2.set_xlabel("Day of Week", fontsize=9, color="#8A9BB0")
-    ax2.set_ylabel("Mean TTI", fontsize=9, color="#8A9BB0")
+    ax2.bar(dow_labels_short, vals, color=colors_dow,
+            edgecolor="#FFFFFF", linewidth=1.5, width=0.6)
+    ax2.axhline(y=1.0, color="#E0DDD8", linewidth=0.9)
+    ax2.set_xlabel("Day of Week", fontsize=10, color="#6A8AA0")
+    ax2.set_ylabel("Mean TTI", fontsize=10, color="#6A8AA0")
     ax2.set_ylim(0.98, 1.22)
-    ax2.tick_params(colors="#8A9BB0", labelsize=8)
+    ax2.tick_params(colors="#8A9BB0", labelsize=9)
     for spine in ax2.spines.values():
-        spine.set_edgecolor("#e0ddd8")
-    ax2.grid(axis="y", color="#e0ddd8", linewidth=0.6)
+        spine.set_edgecolor("#E8E4DE")
+    ax2.grid(axis="y", color="#E8E4DE", linewidth=0.6)
     plt.tight_layout()
     st.pyplot(fig2)
     plt.close()
@@ -445,45 +462,47 @@ with col_b:
 # ── Model evaluation ──────────────────────────────────────────────────────────
 st.markdown("<hr class='section-rule'>", unsafe_allow_html=True)
 st.markdown("<div class='section-eyebrow'>Model Evaluation</div>", unsafe_allow_html=True)
-st.markdown("<div class='section-title'>Test Set Performance · 2024–2025</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'>Test Set Performance · 2024–2025</div>",
+            unsafe_allow_html=True)
 
 col_c, col_d = st.columns([1.4, 1])
 
 with col_c:
     models_order  = ["Persistence","LinearRegression","RandomForest","XGBoost"]
     short_labels  = ["Persist.","LinReg","RF","XGB"]
-    model_colors  = {"Persistence":"#d8d4ce","LinearRegression":"#8A9BB0",
-                     "RandomForest":"#1a2332","XGBoost":"#C0392B"}
+    model_colors  = {"Persistence":"#D8D4CE","LinearRegression":"#8A9BB0",
+                     "RandomForest":"#1C2B3A","XGBoost":"#B03020"}
     horizons_order = ["5min","15min","30min"]
     horizon_labels = {"5min":"5 min","15min":"15 min","30min":"30 min"}
 
-    fig3, axes3 = plt.subplots(1, 3, figsize=(9, 3.2), sharey=False)
-    fig3.patch.set_facecolor("#FAFAF8")
+    fig3, axes3 = plt.subplots(1, 3, figsize=(9, 3.4), sharey=False)
+    fig3.patch.set_facecolor("#F7F5F2")
 
     for i, h in enumerate(horizons_order):
         ax = axes3[i]
-        ax.set_facecolor("#FAFAF8")
+        ax.set_facecolor("#FFFFFF")
         subset = model_res[model_res["horizon"]==h].set_index("model")
         maes   = [subset.loc[m,"test_mae"] if m in subset.index else 0
                   for m in models_order]
         cols   = [model_colors[m] for m in models_order]
         bars   = ax.bar(short_labels, maes, color=cols,
-                        edgecolor="#FAFAF8", linewidth=1, width=0.6)
+                        edgecolor="#FFFFFF", linewidth=1.2, width=0.6)
 
         if h == f"{horizon}min":
             for bar in bars:
-                bar.set_edgecolor("#C0392B")
-                bar.set_linewidth(2)
+                bar.set_edgecolor("#B03020")
+                bar.set_linewidth(2.2)
 
-        ax.set_title(horizon_labels[h], fontsize=10, color="#1a2332", fontweight="600")
+        ax.set_title(horizon_labels[h], fontsize=11, color="#1C2B3A",
+                     fontweight="bold", pad=8)
         if i == 0:
-            ax.set_ylabel("Test MAE", fontsize=8, color="#8A9BB0")
-        ax.tick_params(colors="#8A9BB0", labelsize=7)
+            ax.set_ylabel("Test MAE", fontsize=9, color="#6A8AA0")
+        ax.tick_params(colors="#8A9BB0", labelsize=8)
         for spine in ax.spines.values():
-            spine.set_edgecolor("#e0ddd8")
-        ax.grid(axis="y", color="#e0ddd8", linewidth=0.6)
+            spine.set_edgecolor("#E8E4DE")
+        ax.grid(axis="y", color="#E8E4DE", linewidth=0.6)
 
-    fig3.suptitle("Test MAE by Model and Horizon  ·  Selected horizon highlighted",
+    fig3.suptitle("Test MAE by Model and Horizon  ·  Selected horizon outlined in red",
                   fontsize=9, color="#8A9BB0", y=1.02)
     plt.tight_layout()
     st.pyplot(fig3)
@@ -505,7 +524,6 @@ with col_d:
     """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-
     xgb_res  = model_res[model_res["model"]=="XGBoost"][["horizon","test_mae","test_rmse"]]
     pers_res = model_res[model_res["model"]=="Persistence"][["horizon","test_mae","test_rmse"]]
     compare  = xgb_res.merge(pers_res, on="horizon", suffixes=("_xgb","_pers"))
@@ -514,34 +532,39 @@ with col_d:
     compare.columns = ["Horizon","Persistence","XGBoost","Δ MAE"]
     st.dataframe(compare.set_index("Horizon"), use_container_width=True)
 
-# ── Segment volatility ────────────────────────────────────────────────────────
+# ── Segment volatility with intersection names ────────────────────────────────
 st.markdown("<hr class='section-rule'>", unsafe_allow_html=True)
 st.markdown("<div class='section-eyebrow'>Spatial Analysis</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='section-title'>Segment Volatility · {direction.title()} Direction</div>",
+st.markdown(f"<div class='section-title'>Segment Volatility · {direction.title()}</div>",
             unsafe_allow_html=True)
 
 col_e, col_f = st.columns([2, 1])
 
 with col_e:
-    vol_filtered = vol_tmc[vol_tmc["direction"]==direction].sort_values(
-        "volatility_30min", ascending=False).head(15)
+    vol_filtered = (vol_tmc[vol_tmc["direction"]==direction]
+                    .sort_values("volatility_30min", ascending=False)
+                    .head(15)
+                    .copy())
 
-    fig4, ax4 = plt.subplots(figsize=(9, 3.4))
-    fig4.patch.set_facecolor("#FAFAF8")
-    ax4.set_facecolor("#FAFAF8")
+    # Build display labels: "INTERSECTION (TMC)"
+    vol_filtered["label"] = vol_filtered["tmc"].apply(tmc_display_label)
+
+    fig4, ax4 = plt.subplots(figsize=(9, 4.2))
+    fig4.patch.set_facecolor("#F7F5F2")
+    ax4.set_facecolor("#FFFFFF")
 
     vol_vals = vol_filtered["volatility_30min"].values
-    max_v    = vol_vals.max()
-    bar_cols = [plt.cm.RdYlGn_r(v / max_v * 0.85 + 0.05) for v in vol_vals]
+    max_v    = vol_vals.max() if vol_vals.max() > 0 else 1
+    bar_cols = [plt.cm.RdYlGn_r(v / max_v * 0.80 + 0.08) for v in vol_vals]
 
-    ax4.barh(vol_filtered["tmc"], vol_vals,
-             color=bar_cols, edgecolor="#FAFAF8", linewidth=0.5, height=0.65)
+    ax4.barh(vol_filtered["label"], vol_vals,
+             color=bar_cols, edgecolor="#FFFFFF", linewidth=0.5, height=0.65)
     ax4.set_xlabel("30-min Volatility (std of TTI changes)",
-                   fontsize=9, color="#8A9BB0")
-    ax4.tick_params(colors="#8A9BB0", labelsize=8)
+                   fontsize=10, color="#6A8AA0")
+    ax4.tick_params(colors="#6A8AA0", labelsize=9)
     for spine in ax4.spines.values():
-        spine.set_edgecolor("#e0ddd8")
-    ax4.grid(axis="x", color="#e0ddd8", linewidth=0.6)
+        spine.set_edgecolor("#E8E4DE")
+    ax4.grid(axis="x", color="#E8E4DE", linewidth=0.6)
     plt.tight_layout()
     st.pyplot(fig4)
     plt.close()
@@ -555,7 +578,9 @@ with col_f:
       at these segments cannot be resolved by adding features.<br><br>
       Regression analysis across 41 TMCs confirms a strong
       positive relationship between 30-min TTI volatility
-      and test-set model error.
+      and test-set model error.<br><br>
+      Labels show the nearest intersection so you can locate
+      each segment on the corridor.
     </div>
     """, unsafe_allow_html=True)
 
