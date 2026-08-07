@@ -497,13 +497,13 @@ with col_c:
                      fontweight="bold", pad=8)
         if i == 0:
             ax.set_ylabel("Test MAE", fontsize=9, color="#6A8AA0")
-        ax.tick_params(colors="#8A9BB0", labelsize=8)
+        ax.tick_params(colors="#08448D", labelsize=8)
         for spine in ax.spines.values():
             spine.set_edgecolor("#E8E4DE")
         ax.grid(axis="y", color="#E8E4DE", linewidth=0.6)
 
     fig3.suptitle("Test MAE by Model and Horizon  ·  Selected horizon outlined in red",
-                  fontsize=9, color="#8A9BB0", y=1.02)
+                  fontsize=9, color="#124D96", y=1.02)
     plt.tight_layout()
     st.pyplot(fig3)
     plt.close()
