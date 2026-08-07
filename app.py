@@ -404,7 +404,7 @@ with col_a:
     wb = tti_hour[tti_hour["direction"]=="WESTBOUND"].sort_values("hour_of_day")
 
     fig, ax = plt.subplots(figsize=(7, 3.4))
-    fig.patch.set_facecolor("#F7F5F2")
+    fig.patch.set_facecolor("#0C0701")
     ax.set_facecolor("#FFFFFF")
 
     ax.fill_between(eb["hour_of_day"], 1.0, eb["tti"], color="#1C2B3A", alpha=0.07)
@@ -588,7 +588,7 @@ with col_f:
 st.markdown("""
 <div class='app-footer'>
   <span>I-66 ITB · Phase 1 Endogenous TTI Study</span>
-  <span>RITIS/INRIX probe data · 41 TMCs · 2022–2025</span>
-  <span>Manuscript under review · Transportation Research Part C</span>
+  <span>NPMRDS probe data · 41 TMCs · 2022–2025</span>
+  <span>Manuscript under review</span>
 </div>
 """, unsafe_allow_html=True)
