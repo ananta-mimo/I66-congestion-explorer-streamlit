@@ -564,14 +564,26 @@ with col_e:
     bar_cols = [plt.cm.RdYlGn_r(v / max_v * 0.80 + 0.08) for v in vol_vals]
 
     ax4.barh(vol_filtered["label"], vol_vals,
-             color=bar_cols, edgecolor="#FFFFFF", linewidth=0.5, height=0.65)
+            color=bar_cols, edgecolor="#FFFFFF", linewidth=0.5, height=0.65)
     ax4.set_xlabel("30-min Volatility (std of TTI changes)",
-                   fontsize=10, color="#01090E")
+                  fontsize=10, color="#01090E")
     ax4.tick_params(colors="#020C13", labelsize=9)
     for spine in ax4.spines.values():
         spine.set_edgecolor("#E8E4DE")
     ax4.grid(axis="x", color="#E8E4DE", linewidth=0.6)
+
+    # Corridor direction labels
+    ax4.annotate("◀ Near Beltway (I-495)",
+                xy=(0, 0), xycoords=('axes fraction', 'axes fraction'),
+                xytext=(0, -0.1), textcoords='axes fraction',
+                fontsize=9, color="#6A8AA0", fontstyle="italic")
+    ax4.annotate("Near Washington DC ▶",
+                xy=(0, 1), xycoords=('axes fraction', 'axes fraction'),
+                xytext=(0, 1.02), textcoords='axes fraction',
+                fontsize=9, color="#6A8AA0", fontstyle="italic")
+
     plt.tight_layout()
+
     st.pyplot(fig4)
     plt.close()
 
