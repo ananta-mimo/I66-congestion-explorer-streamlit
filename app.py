@@ -404,7 +404,7 @@ with col_a:
     wb = tti_hour[tti_hour["direction"]=="WESTBOUND"].sort_values("hour_of_day")
 
     fig, ax = plt.subplots(figsize=(7, 3.4))
-    fig.patch.set_facecolor("#0C0701")
+    fig.patch.set_facecolor("#331F06")
     ax.set_facecolor("#FFFFFF")
 
     ax.fill_between(eb["hour_of_day"], 1.0, eb["tti"], color="#1C2B3A", alpha=0.07)
@@ -535,7 +535,7 @@ with col_d:
 # ── Segment volatility with intersection names ────────────────────────────────
 st.markdown("<hr class='section-rule'>", unsafe_allow_html=True)
 st.markdown("<div class='section-eyebrow'>Spatial Analysis</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='section-title'>Segment Volatility · {direction.title()}</div>",
+st.markdown(f"<div class='section-title'>Segment Volatility/Variability · {direction.title()}</div>",
             unsafe_allow_html=True)
 
 col_e, col_f = st.columns([2, 1])
@@ -560,8 +560,8 @@ with col_e:
     ax4.barh(vol_filtered["label"], vol_vals,
              color=bar_cols, edgecolor="#FFFFFF", linewidth=0.5, height=0.65)
     ax4.set_xlabel("30-min Volatility (std of TTI changes)",
-                   fontsize=10, color="#6A8AA0")
-    ax4.tick_params(colors="#6A8AA0", labelsize=9)
+                   fontsize=10, color="#01090E")
+    ax4.tick_params(colors="#020C13", labelsize=9)
     for spine in ax4.spines.values():
         spine.set_edgecolor("#E8E4DE")
     ax4.grid(axis="x", color="#E8E4DE", linewidth=0.6)
