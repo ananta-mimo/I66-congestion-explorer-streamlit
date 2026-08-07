@@ -69,7 +69,7 @@ section[data-testid="stSidebar"] hr {
   display: flex;
   align-items: stretch;
   gap: 0;
-  border: 3px solid #1C2B3A;
+  border: 3px solid #B03020;
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 32px;
