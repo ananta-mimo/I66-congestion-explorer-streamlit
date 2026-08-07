@@ -74,7 +74,7 @@ section[data-testid="stSidebar"] hr {
   overflow: hidden;
   margin-bottom: 32px;
   font-family: 'DM Mono', monospace;
-  box-shadow: 4px 4px 0px #1C2B3A;
+  box-shadow: 4px 4px 0px #8AAFCC;
 }
 .tti-sign-label {
   background: #1C2B3A;
