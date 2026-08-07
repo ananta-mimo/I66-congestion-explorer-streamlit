@@ -359,7 +359,8 @@ toll_text = "Toll Active"   if toll_on else "Toll Inactive"
 st.markdown(f"""
 <div class='tti-sign'>
   <div class='tti-sign-label'>
-    <div class='sign-eyebrow'>Live Estimate \n (from historic data)</div>
+    <div class='sign-eyebrow'>Live Estimate </div>
+    <div class='sign-eyebrow'>(from historic data)</div>
     <div class='sign-title'>
       {dir_short} · {hour:02d}:00<br>{DAY_LABELS[dow]}
     </div>
