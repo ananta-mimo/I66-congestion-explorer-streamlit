@@ -359,7 +359,7 @@ toll_text = "Toll Active"   if toll_on else "Toll Inactive"
 st.markdown(f"""
 <div class='tti-sign'>
   <div class='tti-sign-label'>
-    <div class='sign-eyebrow'>Live Estimate</div>
+    <div class='sign-eyebrow'>Live Estimate \n (from historic data)</div>
     <div class='sign-title'>
       {dir_short} · {hour:02d}:00<br>{DAY_LABELS[dow]}
     </div>
@@ -404,7 +404,7 @@ with col_a:
     wb = tti_hour[tti_hour["direction"]=="WESTBOUND"].sort_values("hour_of_day")
 
     fig, ax = plt.subplots(figsize=(7, 3.4))
-    fig.patch.set_facecolor("#331F06")
+    fig.patch.set_facecolor("#8F7452")
     ax.set_facecolor("#FFFFFF")
 
     ax.fill_between(eb["hour_of_day"], 1.0, eb["tti"], color="#1C2B3A", alpha=0.07)
