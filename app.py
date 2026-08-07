@@ -405,7 +405,7 @@ with col_a:
     wb = tti_hour[tti_hour["direction"]=="WESTBOUND"].sort_values("hour_of_day")
 
     fig, ax = plt.subplots(figsize=(7, 3.4))
-    fig.patch.set_facecolor("#F3F2F0")
+    fig.patch.set_facecolor("#F0DBB2")
     ax.set_facecolor("#FFFFFF")
 
     ax.fill_between(eb["hour_of_day"], 1.0, eb["tti"], color="#1C2B3A", alpha=0.07)
