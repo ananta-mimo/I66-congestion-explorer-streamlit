@@ -42,13 +42,13 @@ html, body, [class*="css"] {
 
 /* ── Sidebar ── */
 section[data-testid="stSidebar"] {
-  background-color: #1C2B3A !important;
+  background-color: #EEECEA !important;
 }
 section[data-testid="stSidebar"] p,
 section[data-testid="stSidebar"] span,
 section[data-testid="stSidebar"] div,
 section[data-testid="stSidebar"] label {
-  color: #B8C8D8 !important;
+  color: #1C2B3A !important;
 }
 section[data-testid="stSidebar"] .stRadio label,
 section[data-testid="stSidebar"] .stSelectbox label,
@@ -56,11 +56,11 @@ section[data-testid="stSidebar"] .stSlider label {
   font-size: 11px !important;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #6A8AA0 !important;
+  color: #5A7A90 !important;
   font-family: 'DM Mono', monospace !important;
 }
 section[data-testid="stSidebar"] hr {
-  border-color: #2D3F52 !important;
+  border-color: #C8C4BE !important;
   margin: 18px 0 !important;
 }
 
@@ -288,7 +288,7 @@ with st.sidebar:
     <div style='padding:24px 0 10px 0'>
       <div class='sign-eyebrow'>Research Dashboard</div>
       <div style='font-family:Playfair Display,serif;font-size:1.4rem;
-                  font-weight:700;color:#F7F5F2;line-height:1.25;margin-top:4px'>
+                  font-weight:700;color:#1C2B3A;line-height:1.25;margin-top:4px'>
         I-66 ITB<br>Congestion<br>Forecast
       </div>
       <div style='margin-top:12px;font-size:13px;color:#6A8AA0;line-height:1.6;
@@ -341,11 +341,11 @@ dir_short = "EB" if direction=="EASTBOUND" else "WB"
 # ── Page header ───────────────────────────────────────────────────────────────
 st.markdown(f"""
 <div style='padding-bottom:6px'>
-  <div class='page-eyebrow'>Phase 1 · Endogenous TTI Predictability Ceiling Study</div>
+  <div class='page-eyebrow'>Endogenous Travel Time Index (TTI) Predictability Ceiling Study</div>
   <div class='page-title'>I-66 Inside the Beltway<br>Congestion Forecast Explorer</div>
   <div class='page-sub'>
-    XGBoost · Random Forest · Persistence baseline &nbsp;·&nbsp;
-    Manuscript under review, <i>Transportation Research Part C</i>
+    XGBoost · Random Forest · Linear Regression · Persistence baseline &nbsp;·&nbsp;
+    
   </div>
 </div>
 """, unsafe_allow_html=True)
