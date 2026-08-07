@@ -77,7 +77,7 @@ section[data-testid="stSidebar"] hr {
   box-shadow: 4px 4px 0px #8AAFCC;
 }
 .tti-sign-label {
-  background: #1C2B3A;
+  background: #B03020;
   color: #F7F5F2;
   padding: 20px 24px;
   display: flex;
