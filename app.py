@@ -547,9 +547,10 @@ with col_e:
                   [['tmc','road_order']]
                   .drop_duplicates(subset='tmc'))
 
+    is_eb = direction == "EASTBOUND"
     vol_filtered = (vol_tmc[vol_tmc["direction"]==direction]
                     .merge(tmc_order, on='tmc', how='left')
-                    .sort_values("road_order")
+                    .sort_values("road_order", ascending=is_eb)
                     .copy())
 
     # Build display labels: "INTERSECTION (TMC)"
@@ -572,12 +573,18 @@ with col_e:
         spine.set_edgecolor("#E8E4DE")
     ax4.grid(axis="x", color="#E8E4DE", linewidth=0.6)
 
-    # Corridor direction labels
-    ax4.annotate("◀ Near Beltway (I-495)",
+    if is_eb:
+        bottom_label = "◀ Near Beltway (I-495)"
+        top_label    = "◀ Near Washington DC"
+    else:
+        bottom_label = "◀ Near Washington DC"
+        top_label    = "◀ Near Beltway (I-495)"
+
+    ax4.annotate(bottom_label,
                 xy=(0, 0), xycoords=('axes fraction', 'axes fraction'),
                 xytext=(0, -0.1), textcoords='axes fraction',
                 fontsize=9, color="#6A8AA0", fontstyle="italic")
-    ax4.annotate("Near Washington DC ▶",
+    ax4.annotate(top_label,
                 xy=(0, 1), xycoords=('axes fraction', 'axes fraction'),
                 xytext=(0, 1.02), textcoords='axes fraction',
                 fontsize=9, color="#6A8AA0", fontstyle="italic")
