@@ -443,16 +443,16 @@ with col_b:
     colors_dow[dow] = "#B03020"
 
     fig2, ax2 = plt.subplots(figsize=(7, 3.4))
-    fig2.patch.set_facecolor("#F7F5F2")
+    fig2.patch.set_facecolor("#F5E2C5")
     ax2.set_facecolor("#FFFFFF")
 
     ax2.bar(dow_labels_short, vals, color=colors_dow,
             edgecolor="#FFFFFF", linewidth=1.5, width=0.6)
     ax2.axhline(y=1.0, color="#E0DDD8", linewidth=0.9)
-    ax2.set_xlabel("Day of Week", fontsize=10, color="#6A8AA0")
-    ax2.set_ylabel("Mean TTI", fontsize=10, color="#6A8AA0")
+    ax2.set_xlabel("Day of Week", fontsize=10, color="#1A689C")
+    ax2.set_ylabel("Mean TTI", fontsize=10, color="#206492")
     ax2.set_ylim(0.98, 1.22)
-    ax2.tick_params(colors="#8A9BB0", labelsize=9)
+    ax2.tick_params(colors="#0E141B", labelsize=9)
     for spine in ax2.spines.values():
         spine.set_edgecolor("#E8E4DE")
     ax2.grid(axis="y", color="#E8E4DE", linewidth=0.6)
