@@ -542,9 +542,14 @@ st.markdown(f"<div class='section-title'>Segment Volatility/Variability · {dire
 col_e, col_f = st.columns([2, 1])
 
 with col_e:
+# Merge road_order from TMC identification file
+    tmc_order = (pd.read_csv("data/TMC_Identification.csv")
+                  [['tmc','road_order']]
+                  .drop_duplicates(subset='tmc'))
+
     vol_filtered = (vol_tmc[vol_tmc["direction"]==direction]
-                    .sort_values("volatility_30min", ascending=False)
-                    .head(15)
+                    .merge(tmc_order, on='tmc', how='left')
+                    .sort_values("road_order")
                     .copy())
 
     # Build display labels: "INTERSECTION (TMC)"
