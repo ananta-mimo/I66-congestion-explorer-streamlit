@@ -582,11 +582,11 @@ with col_e:
 
     ax4.annotate(bottom_label,
                 xy=(0, 0), xycoords=('axes fraction', 'axes fraction'),
-                xytext=(0, -0.1), textcoords='axes fraction',
+                xytext=(-0.5, -0.1), textcoords='axes fraction',
                 fontsize=9, color="#6A8AA0", fontstyle="italic")
     ax4.annotate(top_label,
                 xy=(0, 1), xycoords=('axes fraction', 'axes fraction'),
-                xytext=(0, 1.02), textcoords='axes fraction',
+                xytext=(-0.5, 1.02), textcoords='axes fraction',
                 fontsize=9, color="#6A8AA0", fontstyle="italic")
 
     plt.tight_layout()
